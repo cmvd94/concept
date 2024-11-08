@@ -1,0 +1,34 @@
+installation guide : https://typegraphql.com/docs/installation.html
+yarn add apollo-server-express express graphql reflect-metadata type-graphql
+yarn add -D @types/express @types/graphql @types/node nodemon ts-node typescript
+npm install graphql-scalars
+
+
+check tsconfig.json
+-------------------------------------------------------------------------------------------
+helloworld.ts
+@Resolver()  // resolver decorator initialised 
+class HelloResolver { 
+  @Query( () => String, {name: 'vishnu'} ) //name change hello to name entered, there are few option eg nullable if we set true then we can retun null instead of String!.
+  async hello() {
+    return "hello World"
+  }
+}
+Be aware that only operations (queries, mutation, etc.) 
+defined in the resolvers classes (and types directly connected to them) will be emitted in schema.
+const main = async () => {
+    const schema = await buildSchema({
+        resolvers: [HelloResolver] // all resolver class are assigned in array, which is build as schema
+    })
+
+    const apolloserver = new ApolloServer( {schema})
+    await apolloserver.start()
+
+    const app = Express()
+
+    apolloserver.applyMiddleware({app});
+    app.listen(4000, () => {
+        console.log(" server started on PORT:4000")
+    })
+
+}

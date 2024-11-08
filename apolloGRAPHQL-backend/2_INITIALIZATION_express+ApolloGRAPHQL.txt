@@ -1,0 +1,151 @@
+1. Install Apollo Server and GraphQL Dependencies:
+npm install apollo-server-express graphql
+
+2. In app.ts
+method 1:
+import { ApolloServer } from "apollo-server-express"; // Apollo Server
+import { typeDefs, resolvers } from "./graphql/graphql-schema"; 
+// Apollo Server setup
+const startApolloServer = async () => {
+  const apolloServer = new ApolloServer({
+    typeDefs,
+    resolvers,
+    context: ({ req }) => {
+      // You can pass auth tokens or other data from the request into the context here
+      return { user: req.user }; // Example of adding user data from req to GraphQL context
+    }
+  });
+  await apolloServer.start();
+  apolloServer.applyMiddleware({ app, path: '/graphql' }); // GraphQL route
+};
+
+=>apollo-server-express (Apollo Server v2/v3)
+Version: This package is part of Apollo Server v2 and v3, which integrate tightly with Express.
+
+Usage: It wraps the Apollo Server functionality inside an Express server. 
+You would initialize the server and use the applyMiddleware method to add the Apollo server to your Express app.
+
+Middleware: In v2/v3, applyMiddleware is used to integrate Apollo Server into an existing Express application.
+
+
+method2:
+npm install express @apollo/server graphql body-parser
+
+import { ApolloServer } from "@apollo/server"; // Apollo Server// graphql/apolloServer.ts
+import { ApolloServer } from '@apollo/server';
+import { expressMiddleware } from '@apollo/server/express4';
+import { typeDefs } from './schema'; // Import your GraphQL schema
+import { resolvers } from './resolvers'; // Import your resolvers
+import bodyParser from 'body-parser'; // For parsing the GraphQL requests
+import { Express } from 'express';
+
+// This function initializes Apollo Server and attaches it to the Express app
+export async function initializeApolloServer(app: Express) {
+  const apolloServer = new ApolloServer({
+    typeDefs,
+    resolvers,
+  });
+
+  // Start Apollo Server
+  await apolloServer.start();
+
+  // Attach Apollo Server middleware to the `/graphql` endpoint
+  app.use('/graphql', bodyParser.json(), expressMiddleware(apolloServer));
+
+  console.log('Apollo Server is running at /graphql');
+}
+
+import { typeDefs, resolvers } from "./graphql/graphql-schema"; 
+
+// Apollo Server setup
+const startApolloServer = async () => {
+  const apolloServer = new ApolloServer({
+    typeDefs,
+    resolvers,
+  });
+
+  await apolloServer.start();
+
+  // Use express middleware to integrate Apollo with Express
+  app.use(
+    "/graphql",
+    cors(), // Enable CORS for GraphQL
+    bodyParser.json(), // Required to parse GraphQL requests
+    expressMiddleware(apolloServer, {
+      context: async ({ req }) => ({
+        user: req.user, // Example: Pass user data to context
+      }),
+    })
+  );
+};
+
+startApolloServer(); // Start Apollo Server
+
+=> @apollo/server and expressMiddleware (Apollo Server v4+)
+Version: This is Apollo Server v4+, which has introduced a new modular and middleware-first approach to make the server more flexible and lightweight.
+
+Separation of Concerns: In Apollo Server v4+, the core server package (@apollo/server) is separated from its HTTP framework integrations (like Express). For Express integration, you use the expressMiddleware function from @apollo/server/express4.
+
+Usage: Instead of using applyMiddleware, you now use the expressMiddleware function to connect Apollo Server with Express. This offers more flexibility and allows for better integration with non-Express HTTP frameworks as well.
+
+mrthod3:
+used method 2 npm package but
+ initialized in separete file and call inside mongodb.listen
+
+// graphql/apolloServer.ts
+import { ApolloServer } from '@apollo/server';
+import { expressMiddleware } from '@apollo/server/express4';
+import { typeDefs } from './schema'; // Import your GraphQL schema
+import { resolvers } from './resolvers'; // Import your resolvers
+import bodyParser from 'body-parser'; // For parsing the GraphQL requests
+import { Express } from 'express';
+
+// This function initializes Apollo Server and attaches it to the Express app
+export async function initializeApolloServer(app: Express) {
+  const apolloServer = new ApolloServer({
+    typeDefs,
+    resolvers,
+  });
+
+  // Start Apollo Server
+  await apolloServer.start();
+
+  // Attach Apollo Server middleware to the /graphql endpoint
+  app.use('/graphql', bodyParser.json(), expressMiddleware(apolloServer));
+
+  console.log('Apollo Server is running at /graphql');
+}  
+
+in app.ts
+// Connect to MongoDB
+mongoose
+  .connect(MONGODB_URI)
+  .then(async() => {
+    setupSuperAdmin(); // Set up super admin
+    // Initialize Apollo GraphQL server for the user/client side
+    await initializeApolloServer(app);
+  })
+  .then(() => {
+    console.log('Connected to database');
+    app.listen(PORT, () => {
+      console.log(Server is listening on PORT ${PORT});
+      console.log(GraphQL Server ready at http://localhost:${PORT}/graphql);
+    });
+  })
+  .catch((error) => {
+    console.error(error);
+  });
+
+---------------------------------------------------------------------------
+  schema : npm install graphql-tag
+  eg:
+import { gql } from 'graphql-tag';
+export const typeDefs = gql`
+
+  type Query {
+    allRegions: [Region!]!
+    allGrades: [Grade!]!
+  }
+`;
+---------------------------------------------------------------
+Resolver: 

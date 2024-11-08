@@ -1,0 +1,160 @@
+=>Step 1: Set Up Razorpay Payment Flow
+We’ll create an order first with Razorpay and then handle the payment success callback to store the order details.
+
+const Razorpay = require('razorpay');
+
+const razorpay = new Razorpay({
+  key_id: 'YOUR_KEY_ID',
+  key_secret: 'YOUR_KEY_SECRET',
+});
+
+// Create a new Razorpay order
+const createOrder = async (amount) => {
+  const options = {
+    amount: amount * 100, // Convert amount to paise
+    currency: 'INR',
+    receipt: `receipt_order_${Date.now()}`,
+  };
+
+  try {
+    const order = await razorpay.orders.create(options);
+    return order;
+  } catch (error) {
+    console.error('Error creating Razorpay order:', error);
+  }
+};
+
+
+=>Step 2: GraphQL Resolver to Create an Order
+This resolver will create a Razorpay order and return the order details to the client for payment.
+
+import { GraphQlCustomRequest } from './interfaces/GraphQlCustomRequest';
+
+const courseResolver = {
+  Mutation: {
+    createOrder: async (_: any, { region, grade, semester, amount }, context: GraphQlCustomRequest) => {
+      try {
+        // Check if user is authenticated
+        if (!context.user) {
+          throw new Error('Authentication required');
+        }
+
+        // Create Razorpay order
+        const order = await createOrder(amount);
+
+        return {
+          orderId: order.id,
+          amount: order.amount,
+          currency: order.currency,
+          receipt: order.receipt,
+        };
+      } catch (error) {
+        throw new Error(`Failed to create order: ${error.message}`);
+      }
+    },
+  },
+};
+
+
+=>Step 3: Verify Payment and Store Purchase Details
+Once the payment is successful, the resolver will verify the payment and store the purchase details like order ID, region, grade, semester, parentId, and childId.
+
+import mongoose from 'mongoose';
+import crypto from 'crypto';
+
+const verifyPayment = (razorpayPaymentId, razorpayOrderId, razorpaySignature, keySecret) => {
+  const generatedSignature = crypto
+    .createHmac('sha256', keySecret)
+    .update(razorpayOrderId + '|' + razorpayPaymentId)
+    .digest('hex');
+
+  return generatedSignature === razorpaySignature;
+};
+
+const storePurchaseDetails = async ({ orderId, region, grade, semester, parentId, childId }) => {
+  // Implement logic to store purchase details in the database
+  // Model and schema can be customized based on how the purchase data is stored
+  const purchase = new PurchaseModel({
+    orderId,
+    region,
+    grade,
+    semester,
+    parentId,
+    childId,
+  });
+
+  return await purchase.save();
+};
+
+const courseResolver = {
+  Mutation: {
+    confirmPayment: async (_: any, { paymentId, orderId, signature, region, grade, semester, childId }, context: GraphQlCustomRequest) => {
+      try {
+        if (!context.user) {
+          throw new Error('Authentication required');
+        }
+
+        const isValid = verifyPayment(paymentId, orderId, signature, 'YOUR_KEY_SECRET');
+        if (!isValid) {
+          throw new Error('Payment verification failed');
+        }
+
+        // Store purchase details in the database
+        const parentId = context.user.id;
+        const purchaseDetails = await storePurchaseDetails({ orderId, region, grade, semester, parentId, childId });
+
+        return {
+          success: true,
+          message: 'Payment successful, purchase stored',
+          purchaseDetails,
+        };
+      } catch (error) {
+        throw new Error(`Failed to confirm payment: ${error.message}`);
+      }
+    },
+  },
+};
+
+
+=>Step 4: Define Schema for the Resolvers
+In your GraphQL schema definition, define the mutation for createOrder and confirmPayment.
+
+import { gql } from 'graphql-tag';
+
+export const typeDefs = gql`
+  type Order {
+    orderId: String!
+    amount: Int!
+    currency: String!
+    receipt: String!
+  }
+
+  type PurchaseDetails {
+    success: Boolean!
+    message: String!
+    purchaseDetails: Purchase!
+  }
+
+  type Purchase {
+    orderId: String!
+    region: ID!
+    grade: ID!
+    semester: String!
+    parentId: ID!
+    childId: ID!
+  }
+
+  type Mutation {
+    createOrder(region: ID!, grade: ID!, semester: String!, amount: Int!): Order
+    confirmPayment(paymentId: String!, orderId: String!, signature: String!, region: ID!, grade: ID!, semester: String!, childId: ID!): PurchaseDetails
+  }
+`;
+
+
+=>Step 5: Update the Frontend for Payment Handling
+When the user selects a course and proceeds to payment:
+
+Call the createOrder mutation to get the Razorpay order details.
+Use Razorpay Checkout to collect the payment.
+After payment, call the confirmPayment mutation with the Razorpay payment details and store the purchase.
+Let me know if you'd like further help in refining any part of this process!

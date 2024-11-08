@@ -1,0 +1,23 @@
+Graphql Error:
+1. if null and used ! in schema then it return error. bcz ! promises that we will return data of that format.
+   to avoid we can check data and send
+2. _doc or .toObject() or .lean()
+   eg: allRegions: async () => {
+        try {
+          const regions = await Region.find().lean().populate('grades.gradeId');
+          console.log(regions)
+          
+          return regions.map(region => ({
+            ...region,
+            grades: region.grades.map(grade => ({
+              ...grade,
+              gradeId: grade.gradeId || "Unknown Grade",  // Default value if grade is null
+              grade: grade.gradeName || "Unknown Grade"  // Provide a fallback value if grade is null            
+              }))
+          }));
+        } catch (error) {
+          throw new Error('Error fetching regions');
+        }
+      }
+3. eg{...grade, <any field of grade you want to change can a altered>}, so that remaining field still same.
+     if we alter{...grade, _id : _id.toString()} only id field is alter in that obj remaining are same.

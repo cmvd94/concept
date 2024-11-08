@@ -1,0 +1,11 @@
+DropBox API
+
+App key
+0b8xeft3zhzp774
+App secret
+31al9kki33c8i32
+
+Generated access token
+More information
+sl.B9U_PMe8K_VeZR5le9vl5KuJOA3PbD9YHhjEELbczbqq0H-JPNj5czxjnleW0od79hkQVfN6e-e2A8barjT5H4TTp-IgYuWBHMnVVqZOCdvHOiLhN_X3QGtKHFZ3KWdrs2Jig3SeJ2Wn
+This access token can be used to access your account (cmvd94@gmail.com) via the API. Don’t share your access token with anyone.

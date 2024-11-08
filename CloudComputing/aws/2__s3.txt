@@ -1,0 +1,41 @@
+s3 - simple storage service
+Cloud Storage - support all files
+Serverless - Direct access 
+efs ebs etc other storage which can be accessed directly
+s3 is global service.  no specific region
+
+A bucket is a container for objects. To store your data in Amazon S3, 
+you first create a bucket and specify a bucket name and AWS Region.
+Then, you upload your data to that bucket as objects in Amazon S3. 
+Each object has a key (or key name),
+which is the unique identifier for the object within the bucket.
+
+create bucket:
+normal bucket is created globally, but obj as created in region
+bucket type: general (store in multiple zone) / directory (single zone)
+bucket name: unique
+Object Ownership : acl disable( access control list ) only owner // acl enable
+created.
+
+even file(object) we can set permission.In general when an obj is added , url is generated to view 
+
+Bucket versioning:
+(enabled) while creating bucket
+s3 dashboard there is show version toggle. 
+olddata(stored in bucket) -> changed or edited in local sys which is reuploaded in bucket ie like an update 
+when toggle show version is ON then it show old file and new file with version id
+WHEN ORGINAL DATA IS DELETED ,IF VERSION IS ENABLED THEN WE CAN RETRIVE ORIGINAL DATA, now show version old file type will be "delete marker" 
+For RECOVERY. old file (with type delete marker) . delete again(permanently delete) . now it is recovered.
+
+to delete all. show version .. check all versioned file of that old file and hit delete
+
+No FOLDER:
+
+In Amazon S3, the concept of a "folder" is purely a visual abstraction provided by the AWS Management Console and other tools. Technically, S3 doesn't have folders or directories like a traditional file system. Instead, everything is an object, and "folders" are simply part of the object's key name (its full path).
+
+For example, if you create an object with the key 2024/reports/january/report1.pdf, S3 will treat the entire string 2024/reports/january/report1.pdf as the object's key. There is no actual folder structure; the slashes (/) are just part of the key.
+
+So to answer your question:
+
+A "folder" in S3 is not a real directory or folder, but rather a prefix in the key name of an object.
+Creating a folder simply means uploading an empty object with a key that ends in a slash (/), which is treated as a folder in the console.

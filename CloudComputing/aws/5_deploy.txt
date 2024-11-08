@@ -1,0 +1,12 @@
+move tweb page deploy
+1. create instance in ec2
+2. connect instance
+3. install server package 
+   apache server => yum install httpd -y
+                 => systemctl status httpd
+   //eg free css(can download template)  
+4. so download that html code(from free css web) in instance CLI 
+5. select download directorty. CLI mv * /var/www/html  moving all file 
+   cd /var/www/html
+6. start server.. systemctl start httpd... (if didnt work check security group is enabled. ie http,https)
+7. now from aws console. copy public ip and search .it open page

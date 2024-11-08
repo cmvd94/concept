@@ -1,0 +1,34 @@
+twilio
+cmvd94@
+Str0ngP@ssw0rd94
+recovery: HPPCNTJSJW9GJ2SBAR8RH24H
+................
+api. 
+vishnuOTP
+keytype : standard
+sid: SKb761751eda1486b6c635bc6655154134
+secret: 0NwU1kYJ1eQ2jhFu26n6fvo8V3gLwZPN
+--------------------
+
+// utils/sendOtp.ts
+import twilio from 'twilio';
+
+const accountSid = process.env.TWILIO_ACCOUNT_SID;
+const authToken = process.env.TWILIO_AUTH_TOKEN;
+const twilioPhone = process.env.TWILIO_PHONE_NUMBER;
+// created a trail phone number twilio
+
+in user register random number generated and all user details are set to redis with random otp.
+using this below call random  number is sent to  number.
+ 
+const client = twilio(accountSid, authToken);
+
+export const sendOTP = async (phone: string, otp: Number) => {
+  return client.messages.create({
+    body: `Your verification code is ${otp}`,
+    from: twilioPhone,
+    to: phone,
+  });
+};
+
+now new api to verify otp.checks redis and parse and verify token and save user details

@@ -1,0 +1,18 @@
+WEBSITE HOSTING
+1. Static hosting
+2. Dynamic hosting
+.........................
+Hosting via EC2
+In general when we host a website we need server. lets initialise in EC2
+ec2->middleware(os)->hosting a server(eg apache server)
+ 
+Hosting via S3
+since S3 is serverless. 
+when hosting, s3 will act as server and middleware.
+so we can host sample website(like static website) ,actually used for testing purpose. before launching in EC2
+
+how to host in s3:
+1. create a html file
+2. upload htmlfile in bucket, set it access to public.(awspage)
+3. in aws s3 console. properties -> enable static website hosting (add doc name)
+4. url generated

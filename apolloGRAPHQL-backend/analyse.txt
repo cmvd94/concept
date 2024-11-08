@@ -1,0 +1,214 @@
+//1. about Resolver and Schema return type 
+//2. about Resolver _parent argument.
+
+1.In general when a model is defined it till store in db as "array of object"
+const regions = await Region.find(); 
+         console.log(regions)
+eg1: console.log(regions) 
+o/p:
+[
+  {
+    _id: new ObjectId('66f7a3f6260381a06a5eab70'),
+    regionName: 'Saudi',
+    grades: [ [Object] ],
+    __v: 1
+  },
+  {
+    _id: new ObjectId('66f7ebca9333c0c566b34af6'),
+    regionName: 'Kuwati',
+    grades: [
+      [Object], [Object],
+      [Object], [Object],
+      [Object], [Object],
+      [Object], [Object],
+      [Object], [Object],
+      [Object], [Object],
+      [Object], [Object]
+    ],
+    __v: 14
+  }
+]
+eg2: when console.log([...regions]) in this copy of that array is stored in this new ARRAY.
+eventually value are same . but now it is not reference type
+[
+  {
+    _id: new ObjectId('66f7a3f6260381a06a5eab70'),
+    regionName: 'Saudi',
+    grades: [ [Object] ],
+    __v: 1
+  },
+  {
+    _id: new ObjectId('66f7ebca9333c0c566b34af6'),
+    regionName: 'Kuwati',
+    grades: [
+      [Object], [Object],
+      [Object], [Object],
+      [Object], [Object],
+      [Object], [Object],
+      [Object], [Object],
+      [Object], [Object],
+      [Object], [Object]
+    ],
+    __v: 14
+  }
+]
+eg2: when console.log({...regions}) in this copy of that array is stored in this OBJECT.
+value are same but object inside mutiple object
+{
+  '0': {
+    _id: new ObjectId('66f7a3f6260381a06a5eab70'),
+    regionName: 'Saudi',
+    grades: [ [Object] ],
+    __v: 1
+  },
+  '1': {
+    _id: new ObjectId('66f7ebca9333c0c566b34af6'),
+    regionName: 'Kuwati',
+    grades: [
+      [Object], [Object],
+      [Object], [Object],
+      [Object], [Object],
+      [Object], [Object],
+      [Object], [Object],
+      [Object], [Object],
+      [Object], [Object]
+    ],
+    __v: 14
+  }
+}
+............................
+based on above understanding schema return type and resolver value with it return should be same, 
+even though inner object and field are same if outer part differs then result wil be an error.
+
+schema:  ! mean will return as same
+export const typeDefs = gql`
+    type RegionGrade {
+        gradeName: String!
+        gradeId: ID!
+    }
+
+    type Region {
+        _id: ID!
+        regionName: String!
+        grades: [RegionGrade!]!
+    }
+
+    type Query {
+        allRegions: [Region!]!
+    }
+`;
+BASED ON SCHEMA. in allRegions it return MUST return an ARRAY which MUST have Region OBJECT. 
+and the return object structure should be same as in GRAPGQL schema , not as model's schema
+=>based on above analsis
+  1. return region or return [...region] wll suit for allregion: [Region!]!
+     while [...region] we should convert it to plainObject using [...region._doc/.toObject()] or .lean() when Model.find
+     query:
+           {
+                allRegions {
+                    _id
+                    regionName
+                    grades {
+                        gradeName
+                        gradeId
+                    }
+                }
+            }
+  2. another schema case:
+    export const typeDefs = gql`
+    type RegionGrade {
+        gradeName: String!
+        gradeId: ID!
+    }
+
+    type Region {
+        _id: ID!
+        regionName: String!
+        grades: [RegionGrade!]!
+    }
+    
+    type RegionObject{
+        choice: [Region!]!
+    }
+    type Query {
+        allRegions: RegionObject!
+    }
+   `;
+   in this case RegionObject field is an OBJECT, in which choice is array of object. so in resolver should return an object 
+     return {
+            choice : regions.map( (r) => {
+              return {...r.toObject()}
+            })
+          }
+    
+    query:
+    {
+    allRegions {
+        choice {
+            _id
+            regionName
+            grades {
+                gradeName
+                gradeId
+            }
+        }
+    }
+    
+}
+________________________________________________________________________________________________
+2. Resolver _parent argument
+In GraphQL, the _parent (or parent) argument in a resolver refers to the return value of the parent field, typically from a previous resolver. 
+It represents the result of the parent type's resolver in the hierarchy of a GraphQL query.
+
+In more detail:
+Root-level resolvers: For root-level queries or mutations (like allRegions), 
+the parent argument will usually be null or {} because there is no parent resolver calling it.
+
+Nested resolvers: For nested resolvers, parent will hold the data returned by the previous resolver in the query chain.
+
+Most imortant nested should use same key name used in schema for resolver call. and nested resolver should be outside of Query{
+    
+}
+=>schema :
+export const typeDefs = gql`
+  type Sem {
+    semesterName: String!
+  }
+
+  type RegionGrade {
+    gradeId: ID!
+    gradeName: String!
+    sem: [Sem!]!  # sem is a list of Sem type objects
+  }
+
+  type Region {
+    _id: ID!
+    regionName: String!
+    grades: [RegionGrade!]!
+  }
+
+  type Query {
+    allRegions: [Region!]!
+  }
+=> Resolver:
+Query: {
+    // Resolver for fetching all regions
+    //_parent:null Nested resolver:Region->RegionGrade
+    allRegions: async (_parent: any, _args: any, context: MyContext) => {
+      
+      return regions; // This result becomes the parent for the nested `grades` resolver
+    },
+  },
+  // _parent: allregion
+  Region: {
+    grades: async (parent: any, _args: any, _context: MyContext) => {
+      //console.log("Fetching grades for region:", parent._id);
+      return parent.grades; // Return the grades array for the given region
+    },
+  },
+  // _parent:Region
+  RegionGrade: {
+    sem: async (parent: any, _args: any, _context: MyContext) => {
+     
+     return[]
+    },
+  },

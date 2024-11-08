@@ -1,0 +1,17 @@
+=>CloudComputing:
+  on-demand delivery 
+  pay service which is need
+  pay as you go basis
+=>cloud vs CloudComputing
+cloud: set of hardware, network,storage and service
+clodcomputing: interface that enable delivery of computing as a service
+.......
+website/application run in 3Tier architecture
+  Web Server => frontend
+  Application Server => backend
+  Database server => storage
+.........
+Cloud Service Models
+Infrastructure as service => cloud provider
+Platform as service => developer
+software as serice => end user

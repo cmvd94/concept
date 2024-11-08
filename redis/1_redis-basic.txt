@@ -1,0 +1,70 @@
+Redis is a source-available, in-memory storage, used as a distributed, in-memory key–value database, cache and message broker, with optional durability. caching system
+
+
+install redis software in system.
+in windows redis used wsl
+https://redis.io/docs/latest/operate/oss_and_stack/install/install-redis/install-redis-on-windows/
+...................
+redis cloud service avaialble
+install redis insight(similar to mongodb compass)
+-------------------
+-------------------------REDIS CORE--------------------
+redis datatype.
+no number datatype..if we store number it will store as a string
+1.string
+2.sets (collection of UNIQUE string)
+  name -> { data1, data2, data3} unique string
+3.Hashes (similar to obj)
+  name -> { key: value, key: value}
+4.list  (collection of string)
+  name -> { data1, data2, data3, data1} 
+5.sorted set
+  name -> { data1: 1, data2: 2, data3: 3 }
+6.json  //explained in 3_redisConcept.txt
+7.stream
+8.graph
+9.ts
+---------------------
+REDIS INSIGHT
+--cli command--
+SET key Value
+GET key
+DEL key
+MSET key value key value key value //multiple set
+MGET key
+GETRANGE key indexvalueStart indexvalueEnd //GETRANGE name 0 3 //if name abcdefgh then op=abcd
+GETRANGE key indexvalueStart indexvalueEnd //GETRANGE name -3 -1 //if name abcdefgh then op=fgh
+SETRANGE key index string //overwrites from index
+INCR key //increase number by 1
+DECR key
+INCRBY key value
+DECRBY key value
+
+=>set:
+command-> SADD, SREM, SUNION, SISMEMBER
+
+=>list: (collection of string value in QUEUE there is head and tail)
+linked list ie all data is not stored in same location but there is link btw each data
+LPUSH, RPUSH
+left push and right push .. in a list left most element is zero.
+LPUSH name vishnu .. now vishnu in index 0. when LPUSH name sankar now sankar at 0 vishnu at 1
+LPOP key numberOFelementtoPOP , RPOP
+LLEN, LRANGE key start finish
+LINDEX, LPOS 
+
+=>Hashes
+HSET key:number(if there is multipe) fieldname:value fieldname:value //if key has only one value then no need of key:1,2etc
+HGET Key fieldname
+HGETALL key
+HEXITS, HKEYS key, HVALS key, HDEL key fieldname, DEL key
+
+=> Sorted Set
+key value:score
+
+ZADD key score member score member etc
+
+check redis command doc
+https://redis.io/docs/latest/commands/
+some of the command have extended option ie when we set a value, we can set its expire time along with it
+--------------------------
+npm i redis

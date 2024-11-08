@@ -1,0 +1,26 @@
+=>EC2-Elastic Compute Cloud
+ virtual server .
+instance->launchInstance
+serverName
+os select
+InstanceType(memory optimisation)(t simple,m,c highperformance ,u memory opt-series available)
+Key pair( security ) .ppkforlinux / .pem windows create key generate privatekey (download directly)//publickey present with amazon
+networkSetting - 
+  subnet(if availability zone selected then server will run only in that specific )
+  firewall- security group - add security group http & https .
+config storage
+.create instance.
+now connect . amazon boots os.. in this CLI we can deploy our code.( change to root user sudo i)
+virtual hardware server created.
+now we can install package and run server in cli
+in aws instance page - network tab - public ip - allows view page
+above case we connected instance directly (ie via aws acc)
+
+via thirdyParty access server using privatekey
+download PuTTY
+hostname: publicIp of serverinstance
+conection->ssh->auth->credential select privatekey
+click open
+serverName
+
+os: if linux we can directly use in cli command but if windows we need to use remote desktop 

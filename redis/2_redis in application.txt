@@ -1,0 +1,23 @@
+npm i redis
+
+https://cloud.redis.io/#/databases
+above link connect -> redis client (copycode)
+
+=>check lib/db.js
+import { createClient } from 'redis';
+
+const client = createClient({
+    password: 'UgiWibAzKYWrKYQhYMYMW2VA2Q2fv6TH',
+    socket: {
+        host: 'redis-13885.c212.ap-south-1-1.ec2.redns.redis-cloud.com',
+        port: 13885
+    }
+});
+ like this
+
+=>action/create.js
+
+=>create/page.jsx
+  pipeline command is used.. ie Promise.all
+
+

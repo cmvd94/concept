@@ -1,0 +1,8 @@
+Add these in your tsconfig.json:
+{
+  "compilerOptions": {
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    ...
+  }
+}

@@ -1,0 +1,25 @@
+Child: {
+    childrenImage: async (parent: any, _args: any, _context: MyContext) => {
+      console.log("inside children image",parent.childrenImage)
+      if (!parent.childrenImage) {
+        throw new Error("No image found for this child.");
+      }
+
+      try {
+        // Generate a signed URL for the child's image in S3
+        const command = new GetObjectCommand({
+          Bucket: process.env.AWS_BUCKET_NAME, // Your S3 bucket name
+          Key: parent.childrenImage, // The image key from the child document
+        });
+
+        // Get the signed URL with a specified expiration time
+        const signedUrl = await getSignedUrl(s3, command, { expiresIn: 3600 }); // URL expires in 1 hour
+        return signedUrl;
+      } catch (error) {
+        if (error instanceof Error) {
+          throw new Error(`Failed to generate signed URL: ${error.message}`);
+        } else {
+          throw new Error("An unknown error occurred.");
+        }
+      }
+    },

@@ -1,0 +1,160 @@
+npm install razorpay
+
+------------------------------------------------------------------
+=>Step 1: Set Up Razorpay Account
+Create a Razorpay account: Sign up at Razorpay.
+Get API keys: In the Razorpay dashboard, go to Settings > API Keys to generate your API key (key_id and key_secret).
+Set up webhooks: You'll need this to track events like successful payments, subscription renewals, or cancellations.
+
+=>Step 2: Install Razorpay SDK
+
+=>Step 3: Create Razorpay Subscription Plan
+Razorpay allows you to create subscription plans, and users will subscribe to one of those plans.
+
+Define a Plan:
+Use the Razorpay API to create a plan that specifies billing cycle, pricing, and other details.
+const Razorpay = require("razorpay");
+
+const razorpay = new Razorpay({
+  key_id: "YOUR_KEY_ID",
+  key_secret: "YOUR_KEY_SECRET",
+});
+
+const createPlan = async () => {
+  try {
+    const plan = await razorpay.plans.create({
+      period: "monthly", // Billing cycle - weekly, monthly, yearly
+      interval: 1, // Every 1 month
+      item: {
+        name: "Premium Subscription",
+        amount: 50000, // Amount in paise (₹500)
+        currency: "INR",
+        description: "Premium subscription plan for Kashcool app",
+      },
+    });
+    console.log(plan);
+  } catch (error) {
+    console.error(error);
+  }
+};
+
+createPlan();
+
+
+=>Step 4: Create a Subscription
+Once a plan is created, you can create a subscription for a user:
+
+const createSubscription = async (customerId, planId) => {
+  try {
+    const subscription = await razorpay.subscriptions.create({
+      plan_id: planId, // ID from the plan creation response
+      customer_notify: 1, // Razorpay will notify the customer
+      total_count: 12, // Subscription duration (for 12 months, for example)
+      start_at: Math.floor(Date.now() / 1000) + 60, // Start time (in Unix timestamp)
+    });
+    console.log(subscription);
+    return subscription;
+  } catch (error) {
+    console.error(error);
+  }
+};
+
+
+=>Step 5: Create Customer and Link Subscription
+You can create a customer in Razorpay and then link them to the subscription plan.
+
+const createCustomer = async () => {
+  try {
+    const customer = await razorpay.customers.create({
+      name: "John Doe",
+      email: "john.doe@example.com",
+      contact: "+919999999999",
+    });
+    console.log(customer);
+    return customer.id; // Use this to subscribe the customer to a plan
+  } catch (error) {
+    console.error(error);
+  }
+};
+
+createCustomer();
+
+
+=>Step 6: Handle Payment Gateway in Frontend
+After creating the subscription, you will need to handle the payment on the frontend. You can use Razorpay Checkout to collect the payment for the subscription.
+
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<script>
+  function openCheckout(subscriptionId) {
+    var options = {
+      key: "YOUR_KEY_ID",
+      subscription_id: subscriptionId,
+      name: "Kashcool",
+      description: "Premium Subscription",
+      handler: function (response) {
+        alert("Payment successful");
+        // Send the response to your backend to verify payment
+      },
+      prefill: {
+        name: "John Doe",
+        email: "john.doe@example.com",
+        contact: "+919999999999",
+      },
+      theme: {
+        color: "#F37254",
+      },
+    };
+
+    var rzp1 = new Razorpay(options);
+    rzp1.open();
+  }
+</script>
+
+
+=>Step 7: Verify Subscription on the Backend
+After a successful payment, you need to verify the subscription on your backend to ensure the payment is authentic.
+
+const verifyPayment = (razorpayPaymentId, razorpaySubscriptionId, razorpaySignature) => {
+  const crypto = require("crypto");
+
+  const generatedSignature = crypto.createHmac("sha256", "YOUR_KEY_SECRET")
+    .update(razorpayPaymentId + "|" + razorpaySubscriptionId)
+    .digest("hex");
+
+  return generatedSignature === razorpaySignature;
+};
+
+
+=>Step 8: Set Up Webhooks
+Use Razorpay webhooks to manage events such as subscription creation, renewal, or cancellation.
+
+You can listen to webhook events and update your database accordingly:
+
+app.post("/razorpay/webhook", (req, res) => {
+  const secret = "YOUR_WEBHOOK_SECRET";
+  const crypto = require("crypto");
+
+  const shasum = crypto.createHmac("sha256", secret);
+  shasum.update(JSON.stringify(req.body));
+  const digest = shasum.digest("hex");
+
+  if (digest === req.headers["x-razorpay-signature"]) {
+    // Handle event
+    console.log("Payment webhook verified:", req.body.event);
+  } else {
+    console.log("Webhook verification failed");
+  }
+  res.status(200).json({ status: "ok" });
+});
+
+
+Step 9: Manage Subscriptions in Your App
+Store the subscription ID in your database when a user subscribes.
+Handle user upgrades, cancellations, and renewals via Razorpay’s API.
+With these steps, you'll have a basic Razorpay subscription plan integrated. Let me know if you'd like help with any part of the implementation!
+
+
+
+
+
+

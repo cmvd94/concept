@@ -1,0 +1,79 @@
+
+(Currently graphql-upload) is not working
+
+1. GraphQL does not natively support file uploads, but libraries like graphql-upload enable this functionality.
+    npm install graphql-upload
+    npm install @types/graphql-upload
+
+2. In Apollo Server, you need to integrate graphql-upload to handle file uploads.
+ // @ts-ignore   //typscript fails to sync graphql-upload
+    import { GraphQLUpload, graphqlUploadExpress } from "graphql-upload";
+
+    app.use(
+    "/graphql",
+    graphqlUploadExpress({ maxFileSize: 10 * 1024 * 1024, maxFiles: 1 }), // Set limits for file uploads
+    expressMiddleware(apolloServer, {
+        context: async ({ req }) => ({ req }),
+    })
+    )
+3. Schema:
+    The Upload scalar type is typically provided by libraries like graphql-upload to handle file upload
+    `
+    scalar Upload
+
+    type Mutation {
+    uploadChildImage(childId: ID!, file: Upload!): MessageResponse!
+    }
+
+    type MessageResponse {
+    message: String!
+    }`
+4. Resolver:
+
+    export const childMutationResolvers = {
+        /*new*/
+    Upload: GraphQLUpload, // Define the Upload scalar
+    
+    Mutation: {
+        uploadChildImage: async (
+        _: any,
+        { childId, file }: { childId: string; file: any },
+        { req }: MyContext
+        ) => {
+        if (!req.user) {
+            throw new Error("User is not authenticated");
+        }
+
+        // Check if the child exists and belongs to the parent
+        const child = await Child.findById(childId);
+        if (!child || child.parent.toString() !== req.user.id) {
+            throw new Error("Child not found or unauthorized");
+        }
+
+        // Process the file upload
+        const { createReadStream, filename, mimetype } = await file;
+        const fileStream = createReadStream();
+        const fileBuffer = await new Promise<Buffer>((resolve, reject) => {
+            const chunks: Buffer[] = [];
+            fileStream.on("data", (chunk) => chunks.push(chunk));
+            fileStream.on("end", () => resolve(Buffer.concat(chunks)));
+            fileStream.on("error", reject);
+        });
+
+        // Generate a unique file name for S3
+        const fileExtension = filename.split(".").pop();
+        const uniqueFileName = `childrenImages/${uuidv4()}.${fileExtension}`;
+
+        // Upload to S3 function
+        await multipartUpload(fileBuffer, uniqueFileName, mimetype);
+
+        // Update the child's image URL
+        child.childrenImage = uniqueFileName;
+        await child.save();
+
+        return {
+            message: "Image uploaded successfully",
+        };
+        },
+    },
+    };

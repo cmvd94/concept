@@ -1,0 +1,120 @@
+In a TypeGraphQL setup, the decorators @Resolver(), @Mutation(), and @Arg() are all linked together to define GraphQL operations in a structured, type-safe manner. They map your TypeScript classes, methods, and arguments directly to GraphQL types, mutations, and queries. Let's break down how they work together and what happens under the hood:
+
+Overview of the Linkage
+GraphQL Schema and TypeScript Code: The TypeGraphQL library generates a GraphQL schema directly from your TypeScript code. This means that your TypeScript classes and methods, annotated with decorators like @Resolver(), @Mutation(), and @Arg(), define both the GraphQL schema and the resolver logic simultaneously.
+
+Decorators and Their Roles:
+
+@Resolver(): Defines a class as a GraphQL resolver, i.e., a class that will contain the functions responsible for handling GraphQL queries or mutations.
+@Mutation(): Marks a method inside the resolver class as a mutation resolver. Mutations in GraphQL are operations that modify data.
+@Arg(): Links the method's parameters to arguments passed in by the client via a GraphQL query or mutation. This decorator maps the input argument from the GraphQL request to the method's parameter.
+How They Work Together in Detail
+1. GraphQL Schema Definition:
+When you use the @Resolver(), @Mutation(), and @Arg() decorators in a TypeGraphQL setup, they help define the GraphQL schema automatically. For example, let’s say you want to create a mutation to verify an OTP.
+
+Example Code:
+
+typescript
+Copy code
+import { Resolver, Mutation, Arg } from "type-graphql";
+import { VerifyOTPInput, VerifyOTPResponse } from "../types"; // Input and response types
+import { Parent } from "../models/Parent";
+import { redisClient } from "../redis";
+
+@Resolver()
+export class OTPResolver {
+    @Mutation(() => VerifyOTPResponse) // Mutation to verify OTP
+    async verifyOTP(
+        @Arg("otp") otp: string,
+        @Arg("otpKey") otpKey: string
+    ): Promise<VerifyOTPResponse> {
+        // Logic for OTP verification
+        const storedData = await redisClient.get(otpKey);
+        if (!storedData) {
+            throw new Error("OTP expired or invalid.");
+        }
+        
+        const { otp: storedOTP, ...userData } = JSON.parse(storedData);
+        if (storedOTP !== otp) {
+            throw new Error("Invalid OTP");
+        }
+        
+        const newParent = new Parent(userData);
+        await newParent.save();
+        await redisClient.del(otpKey);
+
+        return { success: true, message: "User registered successfully" };
+    }
+}
+Key Points:
+
+@Resolver(): Defines the OTPResolver class as a resolver.
+@Mutation(): Defines the verifyOTP() method as a mutation called verifyOTP in the GraphQL schema.
+@Arg("otp") and @Arg("otpKey"): Map the arguments from the GraphQL mutation input to the method parameters.
+How It's Linked:
+@Resolver():
+
+This tells TypeGraphQL that the OTPResolver class will handle certain GraphQL operations (queries, mutations, or subscriptions).
+When the schema is built, TypeGraphQL scans this class and sees that it should be included as a part of the generated GraphQL schema.
+@Mutation():
+
+This decorator defines the verifyOTP function as a mutation. In the schema, TypeGraphQL will create a mutation operation named verifyOTP, which the client can call.
+The function's return type (Promise<VerifyOTPResponse>) becomes the GraphQL mutation's return type.
+The input parameters (in this case, otp and otpKey) become arguments of the mutation in the schema.
+Generated GraphQL Schema (behind the scenes):
+
+graphql
+Copy code
+type Mutation {
+   verifyOTP(otp: String!, otpKey: String!): VerifyOTPResponse!
+}
+@Arg():
+
+This decorator maps a specific argument from the GraphQL operation to the resolver function's parameters.
+When a client sends a mutation request, they pass values for otp and otpKey (as specified in the GraphQL schema).
+The @Arg("otp") and @Arg("otpKey") decorators tell TypeGraphQL to extract these arguments from the GraphQL request and pass them into the verifyOTP function.
+GraphQL Client Request:
+
+graphql
+Copy code
+mutation {
+   verifyOTP(otp: "123456", otpKey: "some-key") {
+      success
+      message
+   }
+}
+When the GraphQL server receives this request, TypeGraphQL automatically parses the request, extracts the otp and otpKey arguments, and calls the verifyOTP method with those arguments.
+How the method is called internally:
+
+typescript
+Copy code
+verifyOTP("123456", "some-key")
+Complete Workflow in Detail
+Client Sends a Request: The client sends a GraphQL mutation request like:
+
+graphql
+Copy code
+mutation {
+   verifyOTP(otp: "123456", otpKey: "some-key") {
+      success
+      message
+   }
+}
+TypeGraphQL Parses the Request: TypeGraphQL, based on the schema generated from the TypeScript code, knows that verifyOTP is a mutation and that it expects two arguments: otp and otpKey.
+
+Arguments Passed to Resolver: TypeGraphQL extracts the otp and otpKey arguments from the request and maps them to the corresponding method parameters using the @Arg() decorator.
+
+Resolver Method Executes: The verifyOTP method inside the OTPResolver class is executed with the extracted arguments. Inside this method:
+
+The Redis client retrieves the stored data (like OTP).
+The OTP is validated.
+If successful, a new parent is created in the database.
+Response Sent Back: After executing the mutation, the resolver method returns a result (in this case, an object with success and message fields). This result is returned as the response to the GraphQL client.
+
+TypeGraphQL Handles Errors and Validation: If any error occurs (e.g., invalid OTP, Redis issues), TypeGraphQL automatically wraps and returns the error as a GraphQL error response.
+
+Key Benefits of Linking These Together
+Type Safety: Since the entire flow (from defining arguments to handling the mutation) is based on TypeScript types, there is strict type safety throughout the process.
+Automatic Schema Generation: TypeGraphQL automatically generates the GraphQL schema based on your TypeScript code, so you don’t need to manually define the schema in a .graphql file.
+Declarative Approach: Using decorators simplifies the process of linking GraphQL operations with their resolver functions. The schema and logic are directly linked in a clean, readable way.
+This workflow makes it easy to build and manage GraphQL APIs in a scalable and maintainable manner using TypeScript.

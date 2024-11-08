@@ -1,0 +1,19 @@
+Redis core.
+ Using string,set,list,hash&sortedlist which are core modules 
+
+Redis Stack: 
+ Bunch of extra modules around redis core which can support json and redisearch.
+ Redis Json - allow to store Json doc in redis ,which can have NESTED DATA because in Rediscore we have use different structure like set and hashes
+              also uses access value using dot (like we use in obj)
+ Redis Search - can create secondary index.easily perform search queries. like get me all product that are a have certain price 
+
+Redis OM - client lib
+
+in gerneral RedisStack we have install seperately but when we use redis cloud there is not need .
+in redis cloud, in database config we can select Redis(ie redis core) , Redis Stack .which we can enable redis stack db.
+
+
+in redisInsight cli command.
+1. JSON.SET key:score $ '{ "json Object"
+   }'
+   $ is root

@@ -1,0 +1,16 @@
+object
+
+storage class
+1. frequent access => standard storage
+2. In-frequent access
+ if tansition rule is enabled in storage class, then if unused data in standard storage moves to infrequent access
+ cost of aws is less in infrequent access
+3. Archieve(glacier) => data in compressed
+4. intelligent => we can access frequently or not. (confusion state)
+---------------
+when data upload in default in stores under standard storage
+bucket->management->lifecyclerule->create lifecycle rule
+name,eli add condition if data is not used transition is made
+eg if standard charge 100usd/mnth, infreq 0.05usd, archieve 0.3usd
+
+transition is set for current obj and also non current obj(ie future)

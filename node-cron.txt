@@ -1,0 +1,13 @@
+node-cron is a popular Node.js library that allows you to schedule tasks (jobs) to run at specific intervals using a cron syntax. 
+It is useful for automating repetitive tasks, like cleaning up data, sending email reports, or running background processes at defined times or intervals.
+npm install node-cron
+# or
+yarn add node-cron
+
+eg:
+const cron = require('node-cron');
+
+// Schedule a task to run every minute
+cron.schedule('* * * * *', () => {
+  console.log('Running a task every minute');
+});

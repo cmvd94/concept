@@ -1,0 +1,12 @@
+https://github.com/razorpay/razorpay-node/blob/master/documents/paymentVerfication.md
+
+https://razorpay.com/docs/payments/payments/test-card-details/
+1. razor order can be created both the ends. 
+     using receipt no order is created. 
+2. Once order is created payment link is generated
+3. using link payment is done , once payment is completed which return set of data check in above link
+     in general return order id , payment id and a signature
+4. based on which verification is done. perviously some hashing method is used to verify password .now a razorpay verify method is used 
+
+Webhook (Optional)
+You can also use Razorpay's webhooks for real-time notifications when a payment is completed. In that case, Razorpay will send you the necessary details to your server, and you can apply the same signature verification process.
