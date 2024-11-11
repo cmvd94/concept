@@ -1,0 +1,90 @@
+.git folder is hidden which has link with repository.
+
+1.  create repository in github( which is similar to create folder)
+      if any file s created in repository should have commit message if it is not given it is automatically assign a name
+      Branch ie main/master etc(can consider it as sub folder)
+2.  Install git in system, then
+      In command prompt:
+        we can set user name and email of GIT locally in system
+        => git config --global user.name "cmvd94"
+        => git config --global user.email "cmvd94@gmail.com"
+3.  Clone:
+      copy a folder from git repository
+      copy link of selected repository code(origin link) 
+      =>git clone that_link
+      when it is done it create a git copy folder in local system(.git - for git understanding) and working folder (which has all file and folder respective to repository). 
+      .git and working folder is common when we create a new repository and link local file
+4.  Un-Modified
+      when a new file create - U stamp to respective file
+      => git status 
+      Untracked file name in repository is displayed. ask us to ADD in STAGING AREA
+      (ie working folder in local system is not committed with repository)
+5.  Add to STAGING AREA
+      now newly created file which is untracked is added to STAGING AREA (ie waiting)
+      => git add filename.txt
+      now it is moved to STAGING AREA . now that newfile - A stamp on it
+      now check git status. display- change to be committed new file
+      => git add . //move all untrackedfile to STAGING AREA
+6.  Commit - local: 
+      => git commit -m "commit message"
+      now newly created file is committed in local .git folder. but not in repository
+7.  Push: 
+      now push to repository
+      => git push origin main
+      this will not work for new created repository where origin should be linked.
+      once origin is linked then we can use it. 
+      origin is link of repository and main is under which Branch it should be pushed 
+8.  Modified: 
+      when pushed fill is altered and save then M- stamp on that file.
+      then repeate add,commit and push step
+9.  Delete: 
+      Now file is deleted in working folder.
+      repeate add,commit & push with respective file name
+10. Pull: 
+      eg: when a new file is added/ update file content by other user. then we need only that file then use Pull
+      => git pull //this pull only current branch data
+      => git pull origin main //we we're in subBranch and need to get data from main or other branch
+11. New Folder:
+      rootDir/oldfolder is linked with repository ie it has .git folder
+      now  a new folder is created in rootDir, inside new folder new files are created
+      which is not linked with repository, so move to new folder in cli 
+      => git init // initialised empty git repository. ie .git is created
+      now repeat add, commit 
+      now we cant push directory. bcz repository will not be available, so new create new repository in github and copy that repository link and add it
+      => git remote add origin repositoryLink //now linked
+      => git branch // o/p-> master
+      now master name is changed to main.
+      when we push with main branch it will show error instead we can push using master branch
+      => git push origin master 
+      or can Modify branch name.
+      => git branch -M main // now branch name is changed
+      => git push origin main
+12. Branch display: 
+      => git branch -a //display all branch
+13. create Branch:
+      In github: branch -> newbranch name-> create branch "newbranch" from main
+      now new branch is created ,and also have all file main has.
+      now git branch -a //op-> current branch in green highlighted and all available Branch
+      or
+      =>git branch newbranchName //repeat add,commit and need to push, whereas branch is not available in repository but if git branch origin newbranchName create a branch and push it 
+14. Switch Branch:
+      => git checkout newbranch //switch from old to newbranch
+      => git push origin newbranch
+      //CLI will display list of files of current branch. 
+15. Uses of Branch:
+      why sub branch? main branch has important code where as each modules team will create sub branch using main , develop code in their respective branch and merge it in main branch.
+16. Merge branch: 
+      SWITCH TO MAIN BRANCH 
+      check difference between main branch and sub branch
+      => git diff subBranch // op-> if any new/update file is displayed.
+      => git merger subBranch
+      => git push origin main
+17. Pull REQUEST:
+      In project main branch will be accessible by team member who work on subBranch. 
+      so once subBranch files are Pushed.
+      In gitHub we need to create a pullRequest(request to merge) in repository. from which branch to main. and send request .
+      whereas manager able to access the main verify code and confirm merge in gitHub
+18. Conflict: 
+      when two subBranch work on same file and same set of code and raise a pull request.
+      when we confirm anyone pull request 1st it wont popup any issue ,but for the second pull request if we check it shows Conflict, github has us to resolve this problem so we can correct the code which we want and merge.
+      or to avoid it we have handle this issue manually, not assiging same snippet code for multiple people 
